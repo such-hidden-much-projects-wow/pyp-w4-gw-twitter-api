@@ -85,7 +85,7 @@ def get_tweet(tweet_id):
     t_id, content, dt, username = tweet
     data = {
         "id": t_id,
-        "content": content,
+        "text": content,
         "date": python_date_to_json_str(sqlite_date_to_python(dt)),
         "profile": "/profile/%s" % username,
         "uri": "/tweet/%s" % t_id
@@ -97,12 +97,12 @@ def get_tweet(tweet_id):
 @json_only
 @auth_only
 def post_tweet(user_id):
-    if 'content' not in request.json:
+    if 'text' not in request.json:
         abort(400)
 
     query = """INSERT INTO tweet ("user_id", "content")
                VALUES (:user_id, :content);"""
-    params = {'user_id': user_id, 'content': request.json['content']}
+    params = {'user_id': user_id, 'content': request.json['text']}
     try:
         g.db.execute(query, params)
         g.db.commit()
@@ -161,10 +161,10 @@ def get_profile(username):
     """
     cursor = g.db.execute(query, {'user_id': user_id})
     data['tweet_count'] = 0
-    data['tweet'] = []
+    data['tweets'] = []
     for tweet in cursor.fetchall():
         tweet_id, created, content = tweet
-        data['tweet'].append({
+        data['tweets'].append({
             "id": tweet_id,
             "text": content,
             "date": python_date_to_json_str(sqlite_date_to_python(created)),
